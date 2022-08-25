@@ -1,5 +1,6 @@
-
+using Core.Interfaces;
 using Infraestructura.Datos;
+using Infraestructura.Repositorio;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,30 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<ILugarRepositorio, LugarRepositorio>();
+
 var app = builder.Build();
+
+// Configuracion Automatica de Base de Datos y alimentar base de datos
+
+using(var scope = app.Services.CreateScope()){
+   
+     var services = scope.ServiceProvider;
+     var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+
+     try
+     {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
+        await BaseDatosSeed.seedAsync(context,loggerFactory);
+     }
+     catch (System.Exception ex)
+     {
+        
+        var logger = loggerFactory.CreateLogger<Program>();
+        logger.LogError(ex, "Un error ocurrio durante la migracion");
+     }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
