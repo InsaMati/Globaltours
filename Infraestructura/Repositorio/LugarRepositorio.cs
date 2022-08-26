@@ -13,19 +13,31 @@ namespace Infraestructura.Repositorio
     {
         private readonly ApplicationDbContext _Db;
         public LugarRepositorio(ApplicationDbContext db)
-        {
+        { 
             _Db = db;   
         }
         public async Task<Lugar> GetLugarAsync(int id)
         {
 
             // Find Async, no se puede usar con include
-            return await _Db.Lugar.Include(p => p.Pais).Include(c => c.Categoria).FirstOrDefaultAsync(l => l.Id == id);
+            return await _Db.Lugar.Include(p => p.Pais)
+                                  .Include(c => c.Categoria)
+                                  .FirstOrDefaultAsync(l => l.Id == id);
         }
 
         public async Task<IReadOnlyList<Lugar>> GetLugaresAsync()
         {
-            return await _Db.Lugar.Include(p => p.Pais).Include(c => c.Categoria).ToListAsync();
+
+           /* var paisId = 1;
+
+            var lugares =_Db.Lugar.Where(p=> p.PaisId == paisId)
+                                  .Include(p => p.Pais)
+                                  .Include(c => c.Categoria)
+                                  .ToListAsync();*/
+
+            return await _Db.Lugar.Include(p => p.Pais)
+                                  .Include(c => c.Categoria)
+                                  .ToListAsync();
         }
     }
 }
